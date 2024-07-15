@@ -171,11 +171,46 @@ class SPOpt(SPBase):
         elif disable_pyomo_signal_handling:
             solve_keyword_args["use_signal_handling"] = False
 
+<<<<<<< HEAD
         Ag = getattr(self, "Ag", None)  # agnostic
         if Ag is not None:
             assert not disable_pyomo_signal_handling, "Not thinking about agnostic APH yet"
             kws = {"s": s, "solve_keyword_args": solve_keyword_args, "gripe": gripe, "tee": tee}
             didcallout = Ag.callout_agnostic(kws)
+=======
+        try:
+            results = s._solver_plugin.solve(s,
+                                             **solve_keyword_args,
+                                             load_solutions=False)
+            solver_exception = None
+        except Exception as e:
+            results = None
+            solver_exception = e
+
+        pyomo_solve_time = time.time() - solve_start_time
+        if sputils.not_good_enough_results(results):
+            s._mpisppy_data.scenario_feasible = False
+
+            if gripe:
+                name = self.__class__.__name__
+                if self.spcomm:
+                    name = self.spcomm.__class__.__name__
+                print (f"[{name}] Solve failed for scenario {s.name}")
+                if results is not None:
+                    print ("status=", results.solver.status)
+                    print ("TerminationCondition=",
+                           results.solver.termination_condition)
+                else:
+                    print("no results object, so solving agin with tee=True")
+                    solve_keyword_args["tee"] = True
+                    results = s._solver_plugin.solve(s,
+                                             **solve_keyword_args,
+                                             load_solutions=False)
+
+            if solver_exception is not None:
+                raise solver_exception
+
+>>>>>>> 794a140a337857f14e9a2a8db8f0ca328f43fc9a
         else:
             didcallout = False
 
@@ -898,8 +933,10 @@ class SPOpt(SPBase):
                                                      root=0)
             if self.cylinder_rank == 0:
                 asit = [sit for l_sit in all_set_instance_times for sit in l_sit]
-                print("Set instance times:")
-                print("\tmin=%4.2f mean=%4.2f max=%4.2f" %
+                if len(asit) == 0:
+                    print("Set instance times not available.")
+                else:
+                    print("Set instance times: \tmin=%4.2f mean=%4.2f max=%4.2f" %
                       (np.min(asit), np.mean(asit), np.max(asit)))
 
 
