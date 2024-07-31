@@ -49,7 +49,7 @@ def scenario_creator(scenario_name, ampl_file_name, cfg=None):
     MakeVarDatas = list(ampl.get_variable("Make").instances())
     print(f"{MakeVarDatas = }")
     try:
-        obj_fct = ampl.get_objective("minus_Total_Profit")
+        obj_fct = ampl.get_objective("minus_profit")
     except:
         print("big troubles!!; we can't find the objective function")
         print("doing export to _export.mod")

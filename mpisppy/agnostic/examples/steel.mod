@@ -8,7 +8,7 @@ param market {PROD} >= 0;  # limit on tons sold in week
 
 var Make {p in PROD} >= 0, <= market[p]; # tons produced
 
-minimize minus_Total_Profit: 0 - sum {p in PROD} profit[p] * Make[p];
+minimize minus_profit: 0 - sum {p in PROD} profit[p] * Make[p];
 
                # Objective: total profits from all products
 

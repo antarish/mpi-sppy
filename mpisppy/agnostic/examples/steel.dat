@@ -1,4 +1,5 @@
 data;
+param avail;
 set PROD := bands coils;
 param:    rate  profit  market :=
   bands    200    25     6000
