@@ -34,8 +34,9 @@ def scenario_creator(scenario_name, ampl_file_name, cfg=None):
  
 
     ampl = AMPL()
+    ampl.read(ampl_file_name)
     print(f"{cfg.ampl_data_file = }")  
-    ampl.read_data(cfg.ampl_file_name)
+    ampl.read_data(cfg.ampl_data_file)
     #datafilename = "steel.dat"  ## wrong needs to fix its hardwired rn need to fix
     #ampl.read_data(datafilename)
     scennum = sputils.extract_num(scenario_name)     
