@@ -35,19 +35,35 @@ def scenario_creator(scenario_name, ampl_file_name, cfg=None):
 
     ampl = AMPL()
     ampl.read(ampl_file_name)
-    print(f"{cfg.ampl_data_file = }")  
+    #print(f"{cfg.ampl_data_file = }")  
     ampl.read_data(cfg.ampl_data_file)
     #datafilename = "steel.dat"  ## wrong needs to fix its hardwired rn need to fix
     #ampl.read_data(datafilename)
     scennum = sputils.extract_num(scenario_name)     
     seedoffset = cfg.seed
-    steelstream.seed(scennum+seedoffset)
+    #steelstream.seed(scennum+seedoffset)
+    np.random.seed(scennum + seedoffset)
     
     # RANDOMIZE THE DATA******
+    products = ampl.get_set("PROD")
+    ppu = ampl.get_parameter("profit")
+    if np.random.uniform()<cfg.steel_bandprob:
+        ppu["bands"]/=2
+
+    i = 0
+    for product in products:
+        np.random.seed(scennum + seedoffset + i*2**16)
+        new_value = ppu[product] * max(0,np.random.normal(1,cfg.steel_cv))
+        ppu[product] = new_value
+        print(product)
+        print(f'{ppu[product] = }')
+        i += 1
+    #ppu.set_values({"bands": 20.0, "coils": 30.0})
+    #max(0,np.random.normal(1,cfg.cv))
     
     # the ampl vairable name is Make (which is too bad, but we will live with it)
     MakeVarDatas = list(ampl.get_variable("Make").instances())
-    print(f"{MakeVarDatas = }")
+    #print(f"{MakeVarDatas = }")
     try:
         obj_fct = ampl.get_objective("minus_profit")
     except:
@@ -62,10 +78,13 @@ def inparser_adder(cfg):
         cfg.num_scens_required()
     
         cfg.add_to_config("steel_cv",
-            description="coefficient of variation for random profit(defult 0.1)",
+            description="coefficient of variation for random profit(default 0.1)",
             domain=float,
             default=0.1) 
-        
+        cfg.add_to_config("steel_bandprob",
+            description="probability of bands being sold at half price(default=0.5)",
+            domain=float,
+            default=0.5)
         cfg.add_to_config(name="ampl_data_file",
                       description="The .d file needed if the language is AMPL",
                       domain=str,
